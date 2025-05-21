@@ -52,6 +52,10 @@ jobs:
     - name: Wait for web container to be ready
       run: sleep 10  # можешь заменить на healthcheck
 
+    - name: мигратионсы
+      run: |
+        docker exec test_app bash -c "alembic upgrade heads"
+
     - name: Run pytest inside web container
       run: |
         docker exec test_app bash -c "pytest tests/ | tee /tmp/test_output.txt"
