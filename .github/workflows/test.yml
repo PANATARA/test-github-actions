@@ -69,23 +69,22 @@ jobs:
 
     - name: Check if tests failed and prepare message
       run: |
-        echo "TEST_RESULT<<EOF" >> $GITHUB_ENV
         if grep -q 'FAILURES' test_output.txt; then
-          echo "❌ Тесты не пройдены!" >> $GITHUB_ENV
+          echo "TEST_RESULT=❌ Тесты не пройдены!" >> $GITHUB_ENV
         else
-          echo "✅ Все тесты успешно пройдены!" >> $GITHUB_ENV
+          echo "TEST_RESULT=✅ Все тесты успешно пройдены!" >> $GITHUB_ENV
         fi
-        echo "\`\`\`" >> $GITHUB_ENV
-        tail -n 30 test_output.txt >> $GITHUB_ENV
-        echo "\`\`\`" >> $GITHUB_ENV
-        echo "EOF" >> $GITHUB_ENV
+
 
     - name: Send Telegram message
       uses: appleboy/telegram-action@master
       with:
         to: ${{ secrets.TELEGRAM_CHAT_ID }}
         token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-        message: ${{ env.TEST_RESULT }}
+        message: |
+         Абнова на бекеде
+
+         ${{ env.TEST_RESULT }}
         format: markdown
 
               
