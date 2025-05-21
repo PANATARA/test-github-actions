@@ -56,23 +56,27 @@ jobs:
       run: |
         docker exec test_app bash -c "cd tests && alembic upgrade heads"
 
-    - name: Run pytest inside web container
+    - name: Собственно сами тесты
       run: |
         docker exec test_app bash -c "pytest tests/ | tee /tmp/test_output.txt"
         docker cp test_app:/tmp/test_output.txt ./test_output.txt
 
-    # - name: Send result to Telegram
-    #   run: |
-    #     TEXT=$(tail -n 30 test_output.txt | sed 's/"/\\"/g')
-    #     curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
-    #     -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
-    #     -d text="🧪 Test Results:\n\`\`\`\n$TEXT\n\`\`\`" \
-    #     -d parse_mode=Markdown
 
     - name: Shutdown containers
       if: always()
       run: docker-compose -f docker-compose.test.yml down
 
+    - name: Send Telegram notification
+      uses: appleboy/telegram-action@master
+      with:
+          to: ${{ secrets.TELEGRAM_CHAT_ID }}
+          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          message: |
+              Новая обнова в бекенде!!!!!!!
+              ```
+              ${{ tail -n 30 test_output.txt | sed 's/"/\\"/g' }}
+              ```
+          format: markdown
               
 
 # docker-compose -f docker-compose.test.yml build
