@@ -34,7 +34,7 @@ jobs:
       run: |
         echo "Current directory: $(pwd)"
         echo ".env content:"
-        cat .env
+        cat .env.test
 
     - name: Install docker-compose
       run: |
