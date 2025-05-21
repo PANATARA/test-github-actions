@@ -1,0 +1,13 @@
+venv/
+.VENV/
+
+*.pyc
+*.pyo
+__pycache__/
+
+.env
+
+.git
+LICENSE
+README.md
+requirements-dev

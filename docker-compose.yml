@@ -1,0 +1,54 @@
+services:
+    fastapi:
+        build:
+            context: .
+            dockerfile: Dockerfile
+        container_name: web
+        volumes:
+            - ./src:/usr/src/app/src:cached
+            - ./migrations:/usr/src/app/migrations:cached
+            - ./requirements.txt:/usr/src/app/requirements.txt:cached
+            - ./alembic.ini:/usr/src/app/alembic.ini:cached
+        env_file:
+            - .env
+        depends_on:
+            - postgres_db
+            - redis
+        stdin_open: true
+        tty: true
+        networks:
+            - shared_network
+        ports:
+            - "8000:8000"
+        command: >
+            uvicorn src.main:app --host 0.0.0.0 --port 8000 --reload
+    postgres_db:
+        image: postgres:14
+        container_name: database
+        environment:
+            - POSTGRES_DB=${PG_DATABASE}
+            - POSTGRES_USER=${PG_USER}
+            - POSTGRES_PASSWORD=${PG_PASSWORD}
+        volumes:
+            - pgdata:/var/lib/postgresql/data/
+        ports:
+            - "5432:5432"
+        networks:
+            - shared_network
+        command: >
+            postgres -c wal_level=logical
+                    -c max_replication_slots=4
+                    -c max_wal_senders=4
+    redis:
+        image: redis:alpine
+        container_name: redis
+        ports:
+            - "6379:6379"
+        networks:
+            - shared_network
+volumes:
+    pgdata:
+
+networks:
+  shared_network:
+    external: true
