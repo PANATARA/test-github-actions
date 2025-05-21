@@ -66,17 +66,25 @@ jobs:
       if: always()
       run: docker-compose -f docker-compose.test.yml down
 
+    - name: Read test output
+      id: read_output
+      run: |
+        tail -n 30 test_output.txt > last_lines.txt
+        # Экранируем кавычки и обратные слэши, чтобы не ломать markdown
+        OUTPUT=$(sed 's/\\/\\\\/g; s/"/\\"/g' last_lines.txt)
+        echo "::set-output name=result::$OUTPUT"
+
     - name: Send Telegram notification
       uses: appleboy/telegram-action@master
       with:
-          to: ${{ secrets.TELEGRAM_CHAT_ID }}
-          token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
-          message: |
-              Новая обнова в бекенде!!!!!!!
-              ```
-              ${{ tail -n 30 test_output.txt | sed 's/"/\\"/g' }}
-              ```
-          format: markdown
+        to: ${{ secrets.TELEGRAM_CHAT_ID }}
+        token: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+        message: |
+          Новая обнова в бекенде!!!!!!!
+          ```
+          ${{ steps.read_output.outputs.result }}
+          ```
+        format: markdown
               
 
 # docker-compose -f docker-compose.test.yml build
