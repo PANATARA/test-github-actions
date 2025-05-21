@@ -1,0 +1,67 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v3
+
+    - name: Build Docker containers
+      run: |
+        docker-compose -f docker-compose.test.yml build
+
+    - name: Start containers
+      run: |
+        docker-compose -f docker-compose.test.yml up -d
+
+    - name: Wait for web container to be ready
+      run: sleep 10  # можешь заменить на healthcheck
+
+    - name: Run pytest inside web container
+      run: |
+        docker exec web bash -c "pytest tests/ | tee /tmp/test_output.txt"
+        docker cp web:/tmp/test_output.txt ./test_output.txt
+
+    # - name: Send result to Telegram
+    #   run: |
+    #     TEXT=$(tail -n 30 test_output.txt | sed 's/"/\\"/g')
+    #     curl -s -X POST https://api.telegram.org/bot${{ secrets.TELEGRAM_BOT_TOKEN }}/sendMessage \
+    #     -d chat_id=${{ secrets.TELEGRAM_CHAT_ID }} \
+    #     -d text="🧪 Test Results:\n\`\`\`\n$TEXT\n\`\`\`" \
+    #     -d parse_mode=Markdown
+
+    - name: Shutdown containers
+      if: always()
+      run: docker-compose -f docker-compose.test.yml down
+
+              
+
+# docker-compose -f docker-compose.test.yml build
+# docker-compose -f docker-compose.test.yml up
+# docker exec -it web bash
+# pytest tests/
+
+# platform linux -- Python 3.11.7, pytest-8.3.5, pluggy-1.5.0
+# rootdir: /usr/src/app
+# configfile: pytest.ini
+# plugins: anyio-4.9.0, asyncio-0.26.0
+# asyncio: mode=Mode.STRICT, asyncio_default_fixture_loop_scope=function, asyncio_default_test_loop_scope=function
+# collected 1 item                                                                                                                                                               
+
+# tests/test_users/test_user_service.py .                                                                                                                                  [100%]
+
+# ============================================================================== 1 passed in 1.23s ===============================================================================
+# root@90f449107bdf:/usr/src/app# 
+
+
+# =========================================================================== short test summary info ============================================================================
+# FAILED tests/test_users/test_user_service.py::test_user_created_with_settings - assert 1 == 0
+# ============================================================================== 1 failed in 1.73s ===============================================================================
