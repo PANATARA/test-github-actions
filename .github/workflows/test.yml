@@ -29,14 +29,19 @@ jobs:
         DB_HOST=pgdb
         DB_PORT=${{ secrets.DB_PORT }}
         EOF
+        
+    - name: Install docker-compose
+      run: |
+        sudo curl -L "https://github.com/docker/compose/releases/download/v2.24.2/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+        sudo chmod +x /usr/local/bin/docker-compose
 
     - name: Build Docker containers
       run: |
-        docker compose -f docker compose.test.yml build
+        docker-compose -f docker-compose.test.yml build
 
     - name: Start containers
       run: |
-        docker compose -f docker compose.test.yml up -d
+        docker-compose -f docker-compose.test.yml up -d
 
     - name: Wait for web container to be ready
       run: sleep 10  # можешь заменить на healthcheck
