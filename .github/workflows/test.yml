@@ -54,7 +54,7 @@ jobs:
 
     - name: мигратионсы
       run: |
-        docker exec test_app bash -c "tests/alembic upgrade heads"
+        docker exec test_app bash -c "cd tests && alembic upgrade heads"
 
     - name: Run pytest inside web container
       run: |
