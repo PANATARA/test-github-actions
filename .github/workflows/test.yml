@@ -50,7 +50,7 @@ jobs:
         docker-compose -f docker-compose.test.yml up -d
 
     - name: Wait for web container to be ready
-      run: sleep 10  # можешь заменить на healthcheck
+      run: sleep 3  # можешь заменить на healthcheck
 
     - name: мигратионсы
       run: |
