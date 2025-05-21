@@ -58,7 +58,7 @@ jobs:
 
     - name: Run pytest inside web container
       run: |
-        pytest tests/ | tee /tmp/test_output.txt
+        docker exec test_app bash -c "pytest tests/ | tee /tmp/test_output.txt"
         docker cp test_app:/tmp/test_output.txt ./test_output.txt
 
     # - name: Send result to Telegram
